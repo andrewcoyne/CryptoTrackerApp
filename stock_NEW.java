@@ -1,16 +1,10 @@
+import java.awt.*;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import javax.swing.JTabbedPane;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JFrame;
-import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import java.awt.GridLayout;
+import javax.swing.*;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -29,7 +23,7 @@ public class stock {
     /** Returns an ImageIcon, or null if the path was invalid. */
     protected static ImageIcon createImageIcon(String path) {
         try {
-            java.net.URL imgURL = new URL("http://files.coinmarketcap.com.s3-website-us-east-1.amazonaws.com/static/img/coins/200x200/bitcoin.png");
+            java.net.URL imgURL = new URL("https://walletinvestor.com/static/frontend/images/cryptocurrency-news-icon.png");
             if (imgURL != null) {
                 return new ImageIcon(imgURL);
             } else {
@@ -52,9 +46,66 @@ public class stock {
         JComponent panel1 = makeTextPanel("<html>"+c+"<br/>"+ "Price: $" + data[1] + "<br/>" + "Market Cap: $" + data[2] + "<br/>" + "Supply: " + data[3] + " " + c + "<br/> One-hour Price Change: " + data[4] + "% <br/> 24-Hour Change: " + data[5] + "% </html>");
         tabbedPane.addTab(c, icon, panel1, "Cryptocurrency");
     }
-
+    public static void buildHotPanel(){
+        ImageIcon icon = createImageIcon("images/middle.gif");
+        String[] crypto = {"bitcoin", "ethereum", "ripple", "bitcoin-cash", "cardano", "litecoin", "nem", "stellar", "iota", "eos", "neo", "dash", "tron", "monero", "bitcoin-gold", "ethereum-classic", "qtum", "icon", "lisk", "raiblocks"};
+        double firstHighest = -100;
+        String firstHighestName = "";
+        double secondHighest = -100;
+        String secondHighestName = "";
+        double thirdHighest = -100;
+        String thirdHighestName = "";
+        double fourthHighest = -100;
+        String fourthHighestName = "";
+        double fifthHighest = -100;
+        String fifthHighestName = "";
+        for(int i = 0; i < crypto.length; i++) {
+            String[] c = getData(crypto[i]);
+            String me = c[5];
+            double m = Double.parseDouble(me);
+            if(m>=firstHighest){
+                fifthHighest = fourthHighest;
+                fifthHighestName = fourthHighestName;
+                fourthHighest = thirdHighest;
+                fourthHighestName = thirdHighestName;
+                thirdHighest = secondHighest;
+                thirdHighestName = secondHighestName;
+                secondHighest = firstHighest;
+                secondHighestName = firstHighestName;
+                firstHighest = m;
+                firstHighestName = c[0];
+            }else if(m>=secondHighest){
+                fifthHighest = fourthHighest;
+                fifthHighestName = fourthHighestName;
+                fourthHighest = thirdHighest;
+                fourthHighestName = thirdHighestName;
+                thirdHighest = secondHighest;
+                thirdHighestName = secondHighestName;
+                secondHighest = m;
+                secondHighestName = c[0];
+            }else if(m>=thirdHighest){
+                fifthHighest = fourthHighest;
+                fifthHighestName = fourthHighestName;
+                fourthHighest = thirdHighest;
+                fourthHighestName = thirdHighestName;
+                thirdHighest = m;
+                thirdHighestName = c[0];
+            }else if(m>=fourthHighest){
+                fifthHighest = fourthHighest;
+                fifthHighestName = fourthHighestName;
+                fourthHighest = m;
+                fourthHighestName = c[0];
+            }else if(m>=fifthHighest){
+                fifthHighest = m;
+                fifthHighestName = c[0];
+            }
+        }
+        JComponent panel1 = makeTextPanel("<html>Hottest Cryptocurrencies: <br/>" + firstHighestName + " : " + firstHighest + "% <br/>"+ secondHighestName + " : " + secondHighest + "% <br/>"+ thirdHighestName + " : " + thirdHighest + "% <br/>"+ fourthHighestName + " : " + fourthHighest + "% <br/>"+ fifthHighestName + " : " + fifthHighest + "% <br/>");
+        tabbedPane.addTab("Hottest Cryptocurrencies", icon, panel1, "Cryptocurrencies with the greatest 24-hour price increase");
+    }
     public static void main(String[] args){
-
+        System.out.println("Starting...");
+        buildHotPanel();
         buildPanel("Bitcoin", 1);
         buildPanel("Ethereum", 2);
         buildPanel("Ripple", 3);
@@ -75,6 +126,7 @@ public class stock {
         buildPanel("ICON", 18);
         buildPanel("Lisk", 19);
         buildPanel("Raiblocks", 20);
+        //TODO: buildPlusPanel();, buildRefreshPanel();
 
 
         //Add the tabbed pane to this panel.
@@ -88,6 +140,7 @@ public class stock {
                 //Turn off metal's use of bold fonts
                 UIManager.put("swing.boldMetal", Boolean.FALSE);
                 JFrame frame = new JFrame("Cryptocurrency App");
+                frame.setPreferredSize(new Dimension(500, 300));
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
                 //Add content to the window.
