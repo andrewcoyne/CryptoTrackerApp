@@ -7,3 +7,7 @@ Cryptocurrency app
 -Tab that allows you to add new cryptocurrencies
 
 -Tab with fastest growers
+
+-Resize window to normal size
+
+-Add graphs
