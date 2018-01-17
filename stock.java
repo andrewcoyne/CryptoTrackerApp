@@ -1,7 +1,6 @@
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -51,13 +50,27 @@ public class stock {
         }
         return null;
     }
+    protected static ImageIcon createCoinIcon(String name) {
+        try {
+            java.net.URL imgURL = new URL("https://files.coinmarketcap.com/static/img/coins/32x32/" + name + ".png");
+            if (imgURL != null) {
+                return new ImageIcon(imgURL);
+            } else {
+                System.err.println("Couldn't find file: " + name);
+                return null;
+            }
+        }catch(MalformedURLException e){
+            System.err.println("Malformed URL Exception");
+        }
+        return null;
+    }
     public static JFrame frame = new JFrame("Cryptocurrency App");
     public static JTabbedPane tabbedPane = new JTabbedPane();
 
     public static void buildPanel(String c, int series){
-        ImageIcon icon = createImageIcon("images/middle.gif");
         String mod = c.toLowerCase();
         String modded = mod.replace(" ", "-");
+        ImageIcon icon = createCoinIcon(modded);
         String[] data = getData(modded);
         JComponent panel1 = makeTextPanel("<html>"+c+"<br/>"+ "Price: $" + data[1] + "<br/>" + "Market Cap: $" + data[2] + "<br/>" + "Supply: " + data[3] + " " + c + "<br/> One-hour Price Change: " + data[4] + "% <br/> 24-Hour Change: " + data[5] + "% </html>");
         tabbedPane.addTab(c, icon, panel1, "Cryptocurrency");
@@ -147,7 +160,7 @@ public class stock {
         buildPanel("Lisk", 19);
         buildPanel("Raiblocks", 20);
         buildRefreshPanel();
-        //TODO: buildPlusPanel();, buildRefreshPanel();
+        //TODO: buildPlusPanel();
     }
     public static void main(String[] args){
         System.out.println("Starting...");
