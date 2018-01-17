@@ -1,4 +1,7 @@
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -19,7 +22,20 @@ public class stock {
         panel.add(filler);
         return panel;
     }
-
+    protected static JComponent makeRefreshPanel() {
+        JPanel panel = new JPanel(false);
+        JButton refresh = new JButton("Refresh Data");
+        refresh.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                tabbedPane.removeAll();
+                buildAllPanels();
+            }
+        });
+        panel.setLayout(new GridLayout(1, 1));
+        panel.add(refresh);
+        return panel;
+    }
     /** Returns an ImageIcon, or null if the path was invalid. */
     protected static ImageIcon createImageIcon(String path) {
         try {
@@ -35,7 +51,7 @@ public class stock {
         }
         return null;
     }
-
+    public static JFrame frame = new JFrame("Cryptocurrency App");
     public static JTabbedPane tabbedPane = new JTabbedPane();
 
     public static void buildPanel(String c, int series){
@@ -45,6 +61,11 @@ public class stock {
         String[] data = getData(modded);
         JComponent panel1 = makeTextPanel("<html>"+c+"<br/>"+ "Price: $" + data[1] + "<br/>" + "Market Cap: $" + data[2] + "<br/>" + "Supply: " + data[3] + " " + c + "<br/> One-hour Price Change: " + data[4] + "% <br/> 24-Hour Change: " + data[5] + "% </html>");
         tabbedPane.addTab(c, icon, panel1, "Cryptocurrency");
+    }
+    public static void buildRefreshPanel(){
+        ImageIcon icon = createImageIcon("images/middle.gif");
+        JComponent panel1 = makeRefreshPanel();
+        tabbedPane.addTab("Refresh", icon, panel1, "Refresh the data within the application");
     }
     public static void buildHotPanel(){
         ImageIcon icon = createImageIcon("images/middle.gif");
@@ -103,8 +124,7 @@ public class stock {
         JComponent panel1 = makeTextPanel("<html>Hottest Cryptocurrencies: <br/>" + firstHighestName + " : " + firstHighest + "% <br/>"+ secondHighestName + " : " + secondHighest + "% <br/>"+ thirdHighestName + " : " + thirdHighest + "% <br/>"+ fourthHighestName + " : " + fourthHighest + "% <br/>"+ fifthHighestName + " : " + fifthHighest + "% <br/>");
         tabbedPane.addTab("Hottest Cryptocurrencies", icon, panel1, "Cryptocurrencies with the greatest 24-hour price increase");
     }
-    public static void main(String[] args){
-        System.out.println("Starting...");
+    public static void buildAllPanels(){
         buildHotPanel();
         buildPanel("Bitcoin", 1);
         buildPanel("Ethereum", 2);
@@ -126,7 +146,12 @@ public class stock {
         buildPanel("ICON", 18);
         buildPanel("Lisk", 19);
         buildPanel("Raiblocks", 20);
+        buildRefreshPanel();
         //TODO: buildPlusPanel();, buildRefreshPanel();
+    }
+    public static void main(String[] args){
+        System.out.println("Starting...");
+        buildAllPanels();
 
 
         //Add the tabbed pane to this panel.
@@ -139,7 +164,7 @@ public class stock {
             public void run() {
                 //Turn off metal's use of bold fonts
                 UIManager.put("swing.boldMetal", Boolean.FALSE);
-                JFrame frame = new JFrame("Cryptocurrency App");
+
                 frame.setPreferredSize(new Dimension(500, 300));
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
