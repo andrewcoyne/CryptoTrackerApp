@@ -5,6 +5,7 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import javax.swing.*;
 
 import org.json.simple.JSONArray;
@@ -12,8 +13,38 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 public class stock {
-    //Main display class
-    protected static JComponent makeTextPanel(String text) {
+
+    private static JFrame frame = new JFrame("Cryptocurrency App");
+    private static JTabbedPane tabbedPane = new JTabbedPane();
+    private static ArrayList<String> addedPanes = new ArrayList<>();
+
+    public static void main(String[] args){
+        System.out.println("Starting...");
+        buildAllPanels();
+
+        //The following line enables to use scrolling tabs.
+        tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                //Turn off metal's use of bold fonts
+                UIManager.put("swing.boldMetal", Boolean.FALSE);
+
+                frame.setPreferredSize(new Dimension(500, 300));
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+                //Add content to the window.
+
+                frame.getContentPane().add(tabbedPane);
+
+                //Display the window.
+                frame.pack();
+                frame.setVisible(true);
+            }
+        });
+    }
+
+    private static JComponent makeTextPanel(String text) {
         JPanel panel = new JPanel(false);
         JLabel filler = new JLabel(text);
         filler.setHorizontalAlignment(JLabel.CENTER);
@@ -21,7 +52,7 @@ public class stock {
         panel.add(filler);
         return panel;
     }
-    protected static JComponent makeRefreshPanel() {
+    private static JComponent makeRefreshPanel() {
         JPanel panel = new JPanel(false);
         JButton refresh = new JButton("Refresh Data");
         refresh.addActionListener(new ActionListener() {
@@ -35,8 +66,28 @@ public class stock {
         panel.add(refresh);
         return panel;
     }
+    private static JComponent makeAddPanel() {
+        JPanel panel = new JPanel(false);
+        JLabel heading = new JLabel("Enter correctly-spelled name of cryptocurrency: ");
+        JTextField text = new JTextField(1);
+        JButton adder = new JButton("Add Cryptocurrency");
+        adder.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String userIn = text.getText();
+                addedPanes.add((userIn/*.toLowerCase()).replace(" ", "-"*/));
+                buildPanel(userIn, 30);
+                makeAddPanel();
+            }
+        });
+        panel.setLayout(new GridLayout(3, 1));
+        panel.add(heading);
+        panel.add(text);
+        panel.add(adder);
+        return panel;
+    }
     /** Returns an ImageIcon, or null if the path was invalid. */
-    protected static ImageIcon createImageIcon(String path) {
+    private static ImageIcon createImageIcon(String path) {
         try {
             java.net.URL imgURL = new URL("https://walletinvestor.com/static/frontend/images/cryptocurrency-news-icon.png");
             if (imgURL != null) {
@@ -50,7 +101,7 @@ public class stock {
         }
         return null;
     }
-    protected static ImageIcon createCoinIcon(String name) {
+    private static ImageIcon createCoinIcon(String name) {
         try {
             java.net.URL imgURL = new URL("https://files.coinmarketcap.com/static/img/coins/32x32/" + name + ".png");
             if (imgURL != null) {
@@ -64,23 +115,27 @@ public class stock {
         }
         return null;
     }
-    public static JFrame frame = new JFrame("Cryptocurrency App");
-    public static JTabbedPane tabbedPane = new JTabbedPane();
-
-    public static void buildPanel(String c, int series){
+    private static void buildPanel(String c, int series){
         String mod = c.toLowerCase();
         String modded = mod.replace(" ", "-");
         ImageIcon icon = createCoinIcon(modded);
         String[] data = getData(modded);
-        JComponent panel1 = makeTextPanel("<html>"+c+"<br/>"+ "Price: $" + data[1] + "<br/>" + "Market Cap: $" + data[2] + "<br/>" + "Supply: " + data[3] + " " + c + "<br/> One-hour Price Change: " + data[4] + "% <br/> 24-Hour Change: " + data[5] + "% </html>");
-        tabbedPane.addTab(c, icon, panel1, "Cryptocurrency");
+        if(data[1]!=null) {
+            JComponent panel1 = makeTextPanel("<html>" + c + "<br/>" + "Price: $" + data[1] + "<br/>" + "Market Cap: $" + data[2] + "<br/>" + "Supply: " + data[3] + " " + c + "<br/> One-hour Price Change: " + data[4] + "% <br/> 24-Hour Change: " + data[5] + "% </html>");
+            tabbedPane.addTab(c, icon, panel1, "Cryptocurrency");
+        }
     }
-    public static void buildRefreshPanel(){
+    private static void buildRefreshPanel(){
         ImageIcon icon = createImageIcon("images/middle.gif");
         JComponent panel1 = makeRefreshPanel();
         tabbedPane.addTab("Refresh", icon, panel1, "Refresh the data within the application");
     }
-    public static void buildHotPanel(){
+    private static void buildAddPanel(){
+        ImageIcon icon = createImageIcon("images/middle.gif");
+        JComponent panel1 = makeAddPanel();
+        tabbedPane.addTab("Add", icon, panel1, "Adds a tab for the cryptocurrency of your choice");
+    }
+    private static void buildHotPanel(){
         ImageIcon icon = createImageIcon("images/middle.gif");
         String[] crypto = {"bitcoin", "ethereum", "ripple", "bitcoin-cash", "cardano", "litecoin", "nem", "stellar", "iota", "eos", "neo", "dash", "tron", "monero", "bitcoin-gold", "ethereum-classic", "qtum", "icon", "lisk", "raiblocks"};
         double firstHighest = -100;
@@ -137,7 +192,7 @@ public class stock {
         JComponent panel1 = makeTextPanel("<html>Hottest Cryptocurrencies: <br/>" + firstHighestName + " : " + firstHighest + "% <br/>"+ secondHighestName + " : " + secondHighest + "% <br/>"+ thirdHighestName + " : " + thirdHighest + "% <br/>"+ fourthHighestName + " : " + fourthHighest + "% <br/>"+ fifthHighestName + " : " + fifthHighest + "% <br/>");
         tabbedPane.addTab("Hottest Cryptocurrencies", icon, panel1, "Cryptocurrencies with the greatest 24-hour price increase");
     }
-    public static void buildAllPanels(){
+    private static void buildAllPanels(){
         buildHotPanel();
         buildPanel("Bitcoin", 1);
         buildPanel("Ethereum", 2);
@@ -159,39 +214,14 @@ public class stock {
         buildPanel("ICON", 18);
         buildPanel("Lisk", 19);
         buildPanel("Raiblocks", 20);
-        buildRefreshPanel();
-        //TODO: buildPlusPanel();
-    }
-    public static void main(String[] args){
-        System.out.println("Starting...");
-        buildAllPanels();
-
-
-        //Add the tabbed pane to this panel.
-        //add(tabbedPane);
-
-        //The following line enables to use scrolling tabs.
-        tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
-
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                //Turn off metal's use of bold fonts
-                UIManager.put("swing.boldMetal", Boolean.FALSE);
-
-                frame.setPreferredSize(new Dimension(500, 300));
-                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-                //Add content to the window.
-
-                frame.getContentPane().add(tabbedPane);
-
-                //Display the window.
-                frame.pack();
-                frame.setVisible(true);
+        if(addedPanes.size() > 0) {
+            for (int i = 0; i < addedPanes.size(); i++) {
+                buildPanel(addedPanes.get(i), 30);
             }
-        });
+        }
+        buildRefreshPanel();
+        buildAddPanel();
     }
-
     private static JSONObject builder(String symbol) {
 
         try {
