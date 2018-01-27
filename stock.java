@@ -1,6 +1,7 @@
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -11,6 +12,8 @@ import javax.swing.*;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+
+import static java.lang.Double.parseDouble;
 
 public class stock {
 
@@ -30,10 +33,74 @@ public class stock {
                 //Turn off metal's use of bold fonts
                 UIManager.put("swing.boldMetal", Boolean.FALSE);
 
-                frame.setPreferredSize(new Dimension(500, 300));
-                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frame.setPreferredSize(new Dimension(600, 320));
+                frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 
                 //Add content to the window.
+                JMenuBar menuBar;
+                JMenu menu;
+                JMenuItem menuItem;
+
+
+                //Create the menu bar.
+                menuBar = new JMenuBar();
+
+                //Build the first menu.
+                menu = new JMenu("Options");
+                menu.setMnemonic(KeyEvent.VK_A);
+                menu.getAccessibleContext().setAccessibleDescription(
+                        "The only menu in this program that has menu items");
+                menuBar.add(menu);
+
+                //a group of JMenuItems
+                menuItem = new JMenuItem("Refresh Data",
+                        KeyEvent.VK_T);
+                menuItem.setAccelerator(KeyStroke.getKeyStroke(
+                        KeyEvent.VK_1, ActionEvent.ALT_MASK));
+                menuItem.getAccessibleContext().setAccessibleDescription(
+                        "Refresh Cryptocurrency Data");
+                menuItem.addActionListener(new ActionListener(){
+                    @Override
+                    public void actionPerformed(ActionEvent e){
+                        tabbedPane.removeAll();
+                        buildAllPanels();
+                    }
+                });
+                menu.add(menuItem);
+
+                menuItem = new JMenuItem("Set Alert",
+                        KeyEvent.VK_T);
+                menuItem.setAccelerator(KeyStroke.getKeyStroke(
+                        KeyEvent.VK_1, ActionEvent.ALT_MASK));
+                menuItem.getAccessibleContext().setAccessibleDescription(
+                        "This doesn't really do anything");
+                menuItem.addActionListener(new ActionListener(){
+                    @Override
+                    public void actionPerformed(ActionEvent e){
+                        buildAlertPanel();
+                        tabbedPane.setSelectedIndex(tabbedPane.indexOfTab("Set Alert"));
+                    }
+                });
+                menu.add(menuItem);
+
+                menuItem = new JMenuItem("Add Cryptocurrency",
+                        new ImageIcon("images/middle.gif"));
+                menuItem.setMnemonic(KeyEvent.VK_B);
+                menu.add(menuItem);
+                menuItem.addActionListener(new ActionListener(){
+                    @Override
+                    public void actionPerformed(ActionEvent e){
+                        buildAddPanel();
+                        int index = tabbedPane.indexOfTab("Add");
+                        tabbedPane.setSelectedIndex(index);
+                    }
+                });
+
+
+                menuBar.add(menu);
+
+
+                frame.setJMenuBar(menuBar);
 
                 frame.getContentPane().add(tabbedPane);
 
@@ -52,20 +119,7 @@ public class stock {
         panel.add(filler);
         return panel;
     }
-    private static JComponent makeRefreshPanel() {
-        JPanel panel = new JPanel(false);
-        JButton refresh = new JButton("Refresh Data");
-        refresh.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                tabbedPane.removeAll();
-                buildAllPanels();
-            }
-        });
-        panel.setLayout(new GridLayout(1, 1));
-        panel.add(refresh);
-        return panel;
-    }
+
     private static JComponent makeAddPanel() {
         JPanel panel = new JPanel(false);
         JLabel heading = new JLabel("Enter correctly-spelled name of cryptocurrency: ");
@@ -75,9 +129,14 @@ public class stock {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String userIn = text.getText();
-                addedPanes.add((userIn/*.toLowerCase()).replace(" ", "-"*/));
-                buildPanel(userIn, 30);
-                makeAddPanel();
+                if(((getData((userIn.toLowerCase()).replace(" ", "-"))))[1] != null){
+                    addedPanes.add((userIn/*.toLowerCase()).replace(" ", "-"*/));
+                    buildPanel(userIn, 30);
+                    //makeAddPanel();
+                    tabbedPane.removeTabAt(tabbedPane.indexOfTab("Add"));
+                }else{
+                    System.err.println("Unknown cryptocurrency.");
+                }
             }
         });
         panel.setLayout(new GridLayout(3, 1));
@@ -85,6 +144,102 @@ public class stock {
         panel.add(text);
         panel.add(adder);
         return panel;
+    }
+    private static String limit = "less";
+    private static JComponent makeAlertPanel() {
+        JPanel panel = new JPanel(false);
+        JLabel heading = new JLabel("Enter correctly-spelled name of cryptocurrency: ");
+        JTextField text = new JTextField(1);
+        JRadioButton more = new JRadioButton("Alert when price exceeds given amount");
+        more.addActionListener(new ActionListener(){
+           @Override
+           public void actionPerformed(ActionEvent e){
+               limit = "more";
+           }
+        });
+        JRadioButton less = new JRadioButton("Alert when price goes below given amount");
+        less.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e){
+                limit = "less";
+            }
+        });
+        ButtonGroup group = new ButtonGroup();
+        group.add(more);
+        group.add(less);
+        JLabel head = new JLabel("Enter maximum/minimum price: ");
+        JTextField price = new JTextField(1);
+        JButton adder = new JButton("Set Alert");
+        adder.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String userCrypto = text.getText();
+                double userPrice = parseDouble(((price.getText()).replace("$", "").replace(",","")));
+                if((((getData((userCrypto.toLowerCase()).replace(" ", "-"))))[1] != null) && userPrice >= 0 && limit != null){
+                    tabbedPane.removeTabAt(tabbedPane.indexOfTab("Set Alert"));
+                    /*
+                    java.util.Timer timer = new java.util.Timer(true);
+                    timer.schedule(setAlert(userCrypto, userPrice), 0, 300000);
+                    */
+                    setAlert(userCrypto, userPrice);
+                }else{
+                    System.err.println("Unknown cryptocurrency.");
+                }
+            }
+        });
+        panel.setLayout(new GridLayout(4, 1));
+        panel.add(heading);
+        panel.add(text);
+        panel.add(more);
+        panel.add(less);
+        panel.add(head);
+        panel.add(price);
+        panel.add(adder);
+        return panel;
+    }
+    private static void setAlert(String n, double p){
+        Thread t = new Thread(new Runnable(){
+            public void run() {
+                boolean run = true;
+                try {
+                    while (run) {
+                        double price = parseDouble(((getData((n.toLowerCase()).replace(" ", "-"))))[1]);
+                        System.out.println("Checked for " + n);
+                        if (limit.equals("more")) {
+                            if (price > p) {
+                                JFrame temp = new JFrame("Alert");
+                                JLabel j = new JLabel(("" + n + " went above $" + p));
+                                JPanel jk = new JPanel();
+                                jk.add(j);
+                                temp.add(jk);
+                                temp.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                                temp.setPreferredSize(new Dimension(250, 100));
+                                temp.pack();
+                                temp.setVisible(true);
+                                run = false;
+                            }
+                        } else {
+                            if (price < p) {
+                                JFrame temp = new JFrame("Alert");
+                                JLabel j = new JLabel(("" + n + " went below $" + p));
+                                JPanel jk = new JPanel();
+                                jk.add(j);
+                                temp.add(jk);
+                                temp.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                                temp.setPreferredSize(new Dimension(250, 100));
+                                temp.pack();
+                                temp.setVisible(true);
+                                run = false;
+                            }
+                        }
+                        //return null;
+                        Thread.sleep(300000);
+                    }
+                } catch (InterruptedException e) {
+                    System.err.println("InterruptedException.");
+                }
+            }});
+        t.start();
     }
     /** Returns an ImageIcon, or null if the path was invalid. */
     private static ImageIcon createImageIcon(String path) {
@@ -125,15 +280,16 @@ public class stock {
             tabbedPane.addTab(c, icon, panel1, "Cryptocurrency");
         }
     }
-    private static void buildRefreshPanel(){
-        ImageIcon icon = createImageIcon("images/middle.gif");
-        JComponent panel1 = makeRefreshPanel();
-        tabbedPane.addTab("Refresh", icon, panel1, "Refresh the data within the application");
-    }
+
     private static void buildAddPanel(){
         ImageIcon icon = createImageIcon("images/middle.gif");
         JComponent panel1 = makeAddPanel();
         tabbedPane.addTab("Add", icon, panel1, "Adds a tab for the cryptocurrency of your choice");
+    }
+    private static void buildAlertPanel(){
+        ImageIcon icon = createImageIcon("images/middle.gif");
+        JComponent panel1 = makeAlertPanel();
+        tabbedPane.addTab("Set Alert", icon, panel1, "Sets a price alert for a particular cryptocurrency");
     }
     private static void buildHotPanel(){
         ImageIcon icon = createImageIcon("images/middle.gif");
@@ -151,7 +307,7 @@ public class stock {
         for(int i = 0; i < crypto.length; i++) {
             String[] c = getData(crypto[i]);
             String me = c[5];
-            double m = Double.parseDouble(me);
+            double m = parseDouble(me);
             if(m>=firstHighest){
                 fifthHighest = fourthHighest;
                 fifthHighestName = fourthHighestName;
@@ -204,6 +360,7 @@ public class stock {
         buildPanel("Stellar", 8);
         buildPanel("IOTA", 9);
         buildPanel("EOS", 10);
+        /*
         buildPanel("NEO", 11);
         buildPanel("Dash", 12);
         buildPanel("TRON", 13);
@@ -214,13 +371,12 @@ public class stock {
         buildPanel("ICON", 18);
         buildPanel("Lisk", 19);
         buildPanel("Raiblocks", 20);
+        */
         if(addedPanes.size() > 0) {
             for (int i = 0; i < addedPanes.size(); i++) {
                 buildPanel(addedPanes.get(i), 30);
             }
         }
-        buildRefreshPanel();
-        buildAddPanel();
     }
     private static JSONObject builder(String symbol) {
 
