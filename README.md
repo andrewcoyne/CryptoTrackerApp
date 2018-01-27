@@ -1,7 +1,7 @@
 # stock
-Cryptocurrency app
+Cryptocurrency app, written in Java
 
-## Future Additions (hopefully):
--Tab that allows you to add new cryptocurrencies
+## Future Improvements (hopefully):
+-Optimize code
 
 -Add graphs
