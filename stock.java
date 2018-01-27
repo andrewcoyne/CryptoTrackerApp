@@ -204,7 +204,7 @@ public class stock {
                 try {
                     while (run) {
                         double price = parseDouble(((getData((n.toLowerCase()).replace(" ", "-"))))[1]);
-                        System.out.println("Checked for " + n);
+                        //System.out.println("Checked for " + n);
                         if (limit.equals("more")) {
                             if (price > p) {
                                 JFrame temp = new JFrame("Alert");
