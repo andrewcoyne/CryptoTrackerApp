@@ -47,16 +47,10 @@ public class stock {
 
                 //Build the first menu.
                 menu = new JMenu("Options");
-                menu.setMnemonic(KeyEvent.VK_A);
-                menu.getAccessibleContext().setAccessibleDescription(
-                        "The only menu in this program that has menu items");
                 menuBar.add(menu);
 
                 //a group of JMenuItems
-                menuItem = new JMenuItem("Refresh Data",
-                        KeyEvent.VK_T);
-                menuItem.setAccelerator(KeyStroke.getKeyStroke(
-                        KeyEvent.VK_1, ActionEvent.ALT_MASK));
+                menuItem = new JMenuItem("Refresh Data");
                 menuItem.getAccessibleContext().setAccessibleDescription(
                         "Refresh Cryptocurrency Data");
                 menuItem.addActionListener(new ActionListener(){
@@ -68,12 +62,7 @@ public class stock {
                 });
                 menu.add(menuItem);
 
-                menuItem = new JMenuItem("Set Alert",
-                        KeyEvent.VK_T);
-                menuItem.setAccelerator(KeyStroke.getKeyStroke(
-                        KeyEvent.VK_1, ActionEvent.ALT_MASK));
-                menuItem.getAccessibleContext().setAccessibleDescription(
-                        "This doesn't really do anything");
+                menuItem = new JMenuItem("Set Alert");
                 menuItem.addActionListener(new ActionListener(){
                     @Override
                     public void actionPerformed(ActionEvent e){
@@ -83,9 +72,7 @@ public class stock {
                 });
                 menu.add(menuItem);
 
-                menuItem = new JMenuItem("Add Cryptocurrency",
-                        new ImageIcon("images/middle.gif"));
-                menuItem.setMnemonic(KeyEvent.VK_B);
+                menuItem = new JMenuItem("Add Cryptocurrency");
                 menu.add(menuItem);
                 menuItem.addActionListener(new ActionListener(){
                     @Override
@@ -129,6 +116,12 @@ public class stock {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String userIn = text.getText();
+                // If coinmarketcap.com hasn't fixed the Raiblocks url to Nano by Friday night, add this code:
+                /*
+                if((userIn.toLowerCase()).replace(" ", "-").equals("nano")){
+                    userIn = "RaiBlocks";
+                }
+                */
                 if(((getData((userIn.toLowerCase()).replace(" ", "-"))))[1] != null){
                     addedPanes.add((userIn/*.toLowerCase()).replace(" ", "-"*/));
                     buildPanel(userIn, 30);
@@ -152,10 +145,10 @@ public class stock {
         JTextField text = new JTextField(1);
         JRadioButton more = new JRadioButton("Alert when price exceeds given amount");
         more.addActionListener(new ActionListener(){
-           @Override
-           public void actionPerformed(ActionEvent e){
-               limit = "more";
-           }
+            @Override
+            public void actionPerformed(ActionEvent e){
+                limit = "more";
+            }
         });
         JRadioButton less = new JRadioButton("Alert when price goes below given amount");
         less.addActionListener(new ActionListener(){
@@ -174,6 +167,11 @@ public class stock {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String userCrypto = text.getText();
+                /*
+                if((userCrypto.toLowerCase()).replace(" ", "-").equals("nano")){
+                    userCrypto = "RaiBlocks";
+                }
+                */
                 double userPrice = parseDouble(((price.getText()).replace("$", "").replace(",","")));
                 if((((getData((userCrypto.toLowerCase()).replace(" ", "-"))))[1] != null) && userPrice >= 0 && limit != null){
                     tabbedPane.removeTabAt(tabbedPane.indexOfTab("Set Alert"));
@@ -242,13 +240,13 @@ public class stock {
         t.start();
     }
     /** Returns an ImageIcon, or null if the path was invalid. */
-    private static ImageIcon createImageIcon(String path) {
+    private static ImageIcon createImageIcon() {
         try {
             java.net.URL imgURL = new URL("https://walletinvestor.com/static/frontend/images/cryptocurrency-news-icon.png");
             if (imgURL != null) {
                 return new ImageIcon(imgURL);
             } else {
-                System.err.println("Couldn't find file: " + path);
+                System.err.println("Couldn't find file: " + imgURL.toString());
                 return null;
             }
         }catch(MalformedURLException e){
@@ -282,18 +280,18 @@ public class stock {
     }
 
     private static void buildAddPanel(){
-        ImageIcon icon = createImageIcon("images/middle.gif");
+        ImageIcon icon = createImageIcon();
         JComponent panel1 = makeAddPanel();
         tabbedPane.addTab("Add", icon, panel1, "Adds a tab for the cryptocurrency of your choice");
     }
     private static void buildAlertPanel(){
-        ImageIcon icon = createImageIcon("images/middle.gif");
+        ImageIcon icon = createImageIcon();
         JComponent panel1 = makeAlertPanel();
         tabbedPane.addTab("Set Alert", icon, panel1, "Sets a price alert for a particular cryptocurrency");
     }
     private static void buildHotPanel(){
-        ImageIcon icon = createImageIcon("images/middle.gif");
-        String[] crypto = {"bitcoin", "ethereum", "ripple", "bitcoin-cash", "cardano", "litecoin", "nem", "stellar", "iota", "eos", "neo", "dash", "tron", "monero", "bitcoin-gold", "ethereum-classic", "qtum", "icon", "lisk", "raiblocks"};
+        ImageIcon icon = createImageIcon();
+        String[] crypto = {"bitcoin", "ethereum", "ripple", "bitcoin-cash", "cardano", "litecoin", "nem", "stellar", "iota", "eos", "neo", "dash", "tron", "monero", "bitcoin-gold", "ethereum-classic", "qtum", "icon", "lisk", "nano"};
         double firstHighest = -100;
         String firstHighestName = "";
         double secondHighest = -100;
