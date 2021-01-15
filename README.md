@@ -1,4 +1,4 @@
-# stock
+# cryptoapp
 Cryptocurrency app, written in Java
 
 ## Future Improvements (hopefully):
